@@ -22,6 +22,7 @@ log.setLevel(logging.ERROR)
 
 GRID_SIZE = 200
 MAX_STEP = 20
+SCORE_DECAY = 0.999
 
 app = Flask(__name__)
 red = redis.Redis(host='localhost', port=6379, db=0)
@@ -119,10 +120,18 @@ def doTick():
 
     for userid in score:
         userscore = int(red.get('SCORE:'+userid) or 0)
-        userteam = teammap[userid]
-        red.set('TEAMSCORE:'+userteam, int(red.get('TEAMSCORE:'+userteam) or 0) + score[userid])
         score[userid] += userscore
         red.set('SCORE:'+userid, score[userid])
+
+    for color in COLORNAMES:
+        team_members = list(filter(lambda i: teammap[i] == color, teammap.keys()))
+        team_members = sorted(team_members, key=lambda userid: score[userid], reverse=True)
+
+        team_score = int(red.get('TEAMSCORE:'+color) or 0) * SCORE_DECAY
+        for rang, userid in enumerate(team_members):
+            team_score += score[userid] * (0.8 ** rang)
+
+        red.set('TEAMSCORE:'+color, team_score)
 
     for i in range(4):
         teamscore = red.get('TEAMSCORE:'+str(i))
