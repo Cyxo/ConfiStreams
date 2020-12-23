@@ -123,15 +123,15 @@ def doTick():
         score[userid] += userscore
         red.set('SCORE:'+userid, score[userid])
 
-    for color in COLORNAMES:
-        team_members = list(filter(lambda i: teammap[i] == color, teammap.keys()))
+    for userteam in set(teammap.values()):
+        team_members = list(filter(lambda i: teammap[i] == userteam, teammap.keys()))
         team_members = sorted(team_members, key=lambda userid: score[userid], reverse=True)
 
-        team_score = round(int(red.get('TEAMSCORE:'+color) or 0) * SCORE_DECAY)
+        team_score = round(int(red.get('TEAMSCORE:'+userteam) or 0) * SCORE_DECAY)
         for rang, userid in enumerate(team_members):
             team_score += round(score[userid] * (0.8 ** rang))
 
-        red.set('TEAMSCORE:'+color, team_score)
+        red.set('TEAMSCORE:'+userteam, team_score)
 
     for i in range(4):
         teamscore = red.get('TEAMSCORE:'+str(i))
