@@ -120,8 +120,7 @@ def doTick():
 
     for userid in score:
         userscore = int(red.get('SCORE:'+userid) or 0)
-        score[userid] += userscore
-        red.set('SCORE:'+userid, score[userid])
+        red.set('SCORE:'+userid, userscore + score[userid])
 
     for userteam in set(teammap.values()):
         team_members = list(filter(lambda i: teammap[i] == userteam, teammap.keys()))
